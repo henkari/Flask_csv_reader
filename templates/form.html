@@ -1,0 +1,25 @@
+{% extends "index.html" %}
+{% block title %}Insert new data into database{% endblock %}
+{% block body %}
+<form action="/submit" method="POST">
+    <label for="name">Kunta: </label>
+    <input type="text" name="name" /><br />
+    
+    <label for="age_group">Ikäryhmä: </label>
+    <input type="text" name="age_group" /><br />
+
+    <label for="household_type">Ruokakuntatyyppi: </label>
+    <input type="text" name="household_type" /><br />
+
+    <label for="apartment_type">Hallintamuoto:</label>
+    <input type="text" name="apartment_type" /><br />
+
+    <label for="life_situation">Elämäntilanne: </label>
+    <input type="text" name="life_situation" /><br />
+
+    <label for="paid">Maksettu €: </label>
+    <input type="text" name="paid" /><br />
+
+    <input type="submit" name="submit" value="Submit">
+</form>
+{% endblock %}

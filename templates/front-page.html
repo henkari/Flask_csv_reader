@@ -1,0 +1,179 @@
+{% extends "index.html" %}
+{% block front %}
+<table id="data" class="display" style="width:80%">
+<h1>Maksetut yleiset asumistuet </h1>
+<div id="demo-output" style="margin-bottom: 1em;" class="chart-display"></div>
+
+    {%block text%}
+    <div style="width:120px; margin: 0 auto;">
+     Tiedot saajaryhmittäin:<select id="columnSelect">
+        <option value="1">Ikäryhmät</option>
+        <option value="2">Ruokakuntatyyppi</option>
+        <option value="3">Hallintamuoto</option>
+        <option value="4">Elämäntilanne</option>
+        <option value="5">Maksettu, €</option>
+        
+    </select>
+    </div>
+    {%endblock%}
+    
+    <thead>
+        <tr>
+            
+            <th>Kunta</th>
+            <th>Ikäryhmä</th>
+            <th>Ruokakuntatyyppi</th>
+            <th>Hallintamuoto</th>
+            <th>Elämäntilanne</th>
+            <th>Maksettu, €</th>
+        </tr>
+    </thead>
+    <tfoot>
+        <tr>
+            <th>Kunta</th>
+            <th>Ikäryhmä</th>
+            <th>Ruokakuntatyyppi</th>
+            <th>Hallintamuoto</th>
+            <th>Elämäntilanne</th>
+            <th>Maksettu, €</th> 
+            
+        </tr>
+    </tfoot>
+</table>
+
+
+<script type = "text/javascript">
+   
+   var table= $('#data').DataTable({
+        
+    ajax: '/api/all',
+    columns: [
+    {data:0},
+    {data:1},
+    {data:2},
+    {data:3},
+    {data:4},
+    { data:5,render: function (data) {
+        var number = DataTable.render
+            .number(',', '.', 2)
+            .display(data);
+            return `<span">${number}</span>`;    
+             }}
+
+]
+   })
+    
+    const chart = Highcharts.chart('demo-output', {
+        
+        chart: {
+            type: 'pie',
+            styledMode: true
+        },
+        
+        
+        title: {
+            text: 'Saajaryhmät'
+        },
+        
+        
+    
+        series: [
+        {
+            name:['Ryhmä'],
+            data: [{y:chartData(table)}]
+        }
+        ],
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        accessibility: {
+            point: {
+                valueSuffix: '%'
+            }
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+                }
+            }
+        },
+    })
+    
+   
+   
+   function updateChart() {
+    columnNumber = $('#columnSelect').val();
+    
+        var data = chartData(table, columnNumber)
+    chart.series[0].setData(data.data);
+
+}
+
+
+    $('#columnSelect').on('change', updateChart);
+    
+    table.on('draw', updateChart);
+     
+    function chartData(table, columnNumber) {
+        
+        
+        var counts = {};
+              
+        var paid=table
+        .column(5, { search: 'applied' })
+        .data()
+    
+        
+        
+       if(columnNumber!=5){
+        table
+            .column(columnNumber, { search: 'applied' })
+            .data()           
+            .each(function (val) {
+                            
+                    if (counts[val]) {
+                        counts[val] += 1;
+                        //console.log(counts)
+                    }
+                    else {
+                        counts[val] = 1;
+                    }              
+                    
+                           
+                })
+            }else{
+             table
+            .column(4, { search: 'applied' })
+            .data()           
+            .each(function (val, index) {
+                             
+                var paidVal = parseFloat(paid[index]) || 0; 
+                    //console.log(paidVal)
+                    
+                        
+                    if(counts[val]){
+                        counts[val]+=paidVal
+                          
+                    }else{
+                        counts[val]=paidVal
+                        }
+                //console.log(counts)
+                                      
+                })
+                }
+               return {    
+
+           data:Object.entries(counts).map((e) => ({
+                name: e[0],
+                y: e[1]
+            }))    
+                      
+            }
+        }        
+ 
+</script>
+{% endblock %}

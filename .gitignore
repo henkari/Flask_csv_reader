@@ -1,0 +1,4 @@
+.env
+data_2023.csv
+__pycache__/*
+database.db
